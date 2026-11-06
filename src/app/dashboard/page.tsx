@@ -9,6 +9,11 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
+  const { data: accounts } = await supabase
+    .from('connected_accounts')
+    .select('*')
+    .order('created_at', { ascending: false })
+
   return (
     <div className="min-h-screen p-8">
       <div className="max-w-4xl mx-auto">
@@ -16,14 +21,28 @@ export default async function DashboardPage() {
         <p className="text-gray-600 mb-8">Welcome, {user.email}</p>
 
         <div className="border rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Connected Accounts</h2>
-          <p className="text-gray-500 mb-4">No accounts connected yet.</p>
-          <a
-            href="/connect"
-            className="inline-block px-4 py-2 bg-black text-white rounded-md"
-          >
-            Connect accounts
-          </a>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Connected Accounts</h2>
+            <a href="/connect" className="px-4 py-2 bg-black text-white rounded-md text-sm">
+              Connect more
+            </a>
+          </div>
+
+          {!accounts || accounts.length === 0 ? (
+            <p className="text-gray-500">No accounts connected yet.</p>
+          ) : (
+            <ul className="space-y-2">
+              {accounts.map((acc) => (
+                <li key={acc.id} className="flex justify-between items-center border-b pb-2">
+                  <span>
+                    <strong>{acc.username || acc.platform_user_id}</strong>
+                    <span className="text-sm text-gray-500 ml-2">({acc.platform})</span>
+                  </span>
+                  <span className="text-xs text-gray-400">{new Date(acc.created_at).toLocaleDateString()}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </div>
